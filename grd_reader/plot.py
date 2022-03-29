@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QStatusBar, QWidget
 from pyqtgraph import functions as fn  # type: ignore
 
 from grd_reader import CurveData, GraphData, read_grd
-from valuelabel import ValueLabel
+from grd_reader.valuelabel import ValueLabel
 
 
 class Cursor:
