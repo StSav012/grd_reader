@@ -2,13 +2,12 @@
 
 import math
 import time
-from typing import Optional, List, Union, Tuple
 
-from PySide6.QtGui import QPaintEvent
-from PySide6.QtWidgets import QLabel, QWidget
 from pyqtgraph import functions as fn  # type: ignore
+from qtpy.QtGui import QPaintEvent
+from qtpy.QtWidgets import QLabel, QWidget
 
-__all__ = ['ValueLabel']
+__all__ = ["ValueLabel"]
 
 
 class ValueLabel(QLabel):
@@ -21,15 +20,22 @@ class ValueLabel(QLabel):
 
     This is ValueLabel from pyqtgraph made right.
     """
-    values: List[Tuple[float, Union[int, float]]]
+
+    values: list[tuple[float, int | float]]
     averageTime: float
     unit: str
     siPrefix: bool
     decimals: int
 
-    def __init__(self, parent: Optional[QWidget] = None,
-                 unit: Optional[str] = None, siPrefix: bool = False, decimals: int = 3,
-                 averageTime: float = 0., formatStr: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        parent: QWidget | None = None,
+        unit: str | None = None,
+        siPrefix: bool = False,
+        decimals: int = 3,
+        averageTime: float = 0.0,
+        formatStr: str | None = None,
+    ) -> None:
         """
         ==============      ==================================================================================
         **Arguments:**
@@ -47,15 +53,15 @@ class ValueLabel(QLabel):
         QLabel.__init__(self, parent)
         self.values = []
         self.averageTime = averageTime  # no averaging by default
-        self.unit = unit or ''
+        self.unit = unit or ""
         self.siPrefix = siPrefix
         self.decimals = decimals
         if formatStr is None:
-            self.formatStr = '{scaledValue:.{decimals}f}{suffixGap}{si_prefix}{unit}'
+            self.formatStr = "{scaledValue:.{decimals}f}{suffixGap}{si_prefix}{unit}"
         else:
             self.formatStr = formatStr
 
-    def setValue(self, value: Union[int, float]) -> None:
+    def setValue(self, value: int | float) -> None:
         now: float = time.monotonic()
         self.values.append((now, value))
         cutoff: float = now - self.averageTime
@@ -82,23 +88,25 @@ class ValueLabel(QLabel):
 
     def generateText(self) -> str:
         if len(self.values) == 0:
-            return ''
+            return ""
         val: float = self.averageValue()
         if math.isnan(val):
-            return ''
+            return ""
 
         # format_string the string
-        parts = {'value': val, 'unit': self.unit, 'decimals': self.decimals}
+        parts = {"value": val, "unit": self.unit, "decimals": self.decimals}
         if self.siPrefix and self.unit:
             # SI prefix was requested, so scale the value accordingly
             (s, p) = fn.siScale(val)
-            parts.update({'si_prefix': p, 'scaledValue': s * val})
+            parts.update({"si_prefix": p, "scaledValue": s * val})
         else:
             # no SI prefix /unit requested; scale is 1
             exp: int = int(math.floor(math.log10(abs(val)))) if val != 0.0 else 0
             man: float = val * math.pow(0.1, exp)
-            parts.update({'si_prefix': '', 'scaledValue': val, 'exp': exp, 'mantissa': man})
+            parts.update(
+                {"si_prefix": "", "scaledValue": val, "exp": exp, "mantissa": man}
+            )
 
-        parts['suffixGap'] = ' ' if (parts['unit'] or parts['si_prefix']) else ''
+        parts["suffixGap"] = " " if (parts["unit"] or parts["si_prefix"]) else ""
 
-        return self.formatStr.format(**parts).replace('-', '−')
+        return self.formatStr.format(**parts).replace("-", "−")
